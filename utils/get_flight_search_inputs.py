@@ -1,42 +1,28 @@
 from utils.build_url import build_url
+from datetime import datetime, timedelta
 
 def get_flight_search_inputs(url_base: str):
     urls = []
-    departure_dates = []
+    departure_dates = ["13/09/2025", "14/09/2025", "20/09/2025", "21/09/2025", "27/09/2025", "28/09/2025"]
     return_dates = []
 
-    # Prompt the user for departure and return dates
-    departure_date = input("Enter the departure date (DD/MM/YYYY): ")
-    departure_dates.append(departure_date)
-    return_date = input("Enter the return date (DD/MM/YYYY): ")
-    return_dates.append(return_date)
+    for departure_date in departure_dates:
+        # Generate future return dates (13–15 days after the current departure date)
+        base_return_date = datetime.strptime(departure_date, "%d/%m/%Y")
+        future_return_dates = [
+            (base_return_date + timedelta(days=i)).strftime("%d/%m/%Y")
+            for i in range(13, 16)
+        ]
+        return_dates.extend(future_return_dates)
 
-    # Prompt the user for the origin and destination airports
-    origin = input("Enter the origin airport code: ")
-    destination = input("Enter the destination airport code: ")
+        # Build URLs for each combination of the current departure date and return dates
+        for future_return_date in future_return_dates:
+            url = build_url(url_base, departure_date, future_return_date, "GRU", "FCO")
+            urls.append(url)  # Append the generated URL to the list
 
-    # Build the URL using the scraper's build_url method
-    url = build_url(url_base, departure_date, return_date, origin, destination)
-    urls.append(url)  # Append the generated URL to the list
+    # Print the URLs and dates for debugging or confirmation
+    print("Generated URLs:", urls)
+    print("Departure Dates:", departure_dates)
+    print("Return Dates:", return_dates)
 
-    # Prompt the user if they want to search for a different date
-    search_different_flights = input(
-        "Do you want to search for a different date? (yes/no): ")
-
-    while search_different_flights.lower() == 'yes':
-        # If yes, prompt for new departure and return dates
-        departure_date = input("Enter the departure date (DD/MM/YYYY): ")
-        return_date = input("Enter the return date (DD/MM/YYYY): ")
-        departure_dates.append(departure_date)
-        return_dates.append(return_date)
-
-        # Build the URL using the scraper's build_url method
-        url = build_url(url_base, departure_date,
-                        return_date, origin, destination)
-        urls.append(url)  # Append the generated URL to the list
-
-        # Prompt the user again if they want to search for a different date
-        search_different_flights = input(
-            "Do you want to search for a different date? (yes/no): ")
-
-    return urls, departure_dates, return_dates, origin, destination
+    return urls, departure_dates, return_dates, "GRU", "FCO"

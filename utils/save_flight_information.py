@@ -1,17 +1,19 @@
 import os
+import pandas as pd
 
+def save_flight_information(flight_data, aggregated_df) -> None:
+    # Convert flight data to a DataFrame
+    df = pd.DataFrame(flight_data)
 
-def save_flight_information(df, departure_date_formatted, return_date_formatted, airport_codes) -> None:
-    # Create directories for saving the files if they don't exist
-    if not os.path.isdir('./Flights'):
-        os.mkdir('./Flights')
-    if not os.path.isdir(f'./Flights/{departure_date_formatted}*{return_date_formatted}_{airport_codes}'):
-        os.mkdir(
-            f'./Flights/{departure_date_formatted}*{return_date_formatted}_{airport_codes}')
+    # Append the current flight data to the aggregated DataFrame
+    aggregated_df = pd.concat([aggregated_df, df], ignore_index=True)
 
-    # Save the flight information to an Excel file
-    df.to_excel(f'./Flights/{departure_date_formatted}*{return_date_formatted}_{airport_codes}/flights_{departure_date_formatted}_{return_date_formatted}_{airport_codes}.xlsx', index=False)
-    print(
-        f"flights_{departure_date_formatted}_{return_date_formatted}_{airport_codes}.xlsx saved.")
-    print("\n")
-    print("\n")
+    return aggregated_df
+
+def save_aggregated_csv(aggregated_df, aggregated_file_name):
+    # Save the aggregated flight information to a single CSV file
+    os.makedirs('./Flights', exist_ok=True)
+    aggregated_file_path = f'./Flights/{aggregated_file_name}.csv'
+    aggregated_df.to_csv(aggregated_file_path, index=False)
+
+    print(f"{aggregated_file_path} saved.")
